@@ -155,8 +155,8 @@ hdf = housingdata_df.copy()
 #create ratio of housing prices from recession start to recession bottom
 ratio = pd.DataFrame({'ratio': hdf[recession_start].div(hdf[recession_bottom])})
 
-#ratio will not append since not recog as PeriodIndex
-#change dataframe to str, then concat ratio to hdf
+#ratio will not append since not recognized as PeriodIndex
+#change dataframe to str, then concatenated ratio to hdf
 hdf.columns = hdf.columns.to_series().astype(str)
 hdf = pd.concat([hdf, ratio], axis=1)
 
