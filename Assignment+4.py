@@ -64,7 +64,7 @@ get_recession_start()
 def get_recession_end():
     '''Returns the year and quarter of the recession end time as a 
     string value in a format such as 2005q3'''
-    #figured out that gdp[gdp['Quarter'] == '2008q2'].index.tolist() was [245], but for some reason it won't compile right.
+    #figured out that gdp[gdp['Quarter'] == '2008q2'].index.tolist() was [245]
     gdp2 = gdp.loc[245:]
     recession_end = []
     for i in range(len(gdp2)- 2):
