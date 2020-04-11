@@ -97,8 +97,7 @@ answer_two()
 # In[5]:
 
 def answer_three():
-    only_gold = df.where((df['Gold'] > 0) & (df['Gold.1'] > 0))
-    only_gold = only_gold.dropna()
+    only_gold = df[(df['Gold'] > 0) & (df['Gold.1']>0)]
     return (abs((only_gold['Gold'] - only_gold['Gold.1']) / only_gold['Gold.2'])).idxmax()
 
 answer_three()
