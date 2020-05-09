@@ -171,7 +171,7 @@ def answer_seven():
     new_df = census_df[census_df['SUMLEV'] == 50][[6, 9, 10, 11, 12, 13, 14]]
     new_df["MaxDiff"] = abs(new_df.max(axis=1) - new_df.min(axis=1))
     most_change = new_df.sort_values(by=["MaxDiff"], ascending = False)
-    return most_change.iloc[0][0]
+    return most_change.iloc[0, 0]
 
 answer_seven()
 
@@ -186,12 +186,11 @@ answer_seven()
 # In[122]:
 
 def answer_eight():
-    counties = census_df[census_df['SUMLEV'] == 50]
-    region = counties[(counties['REGION'] == 1) | (counties['REGION'] == 2)]
-    washington = region[region['CTYNAME'].str.startswith("Washington")]
-    grew = washington[washington['POPESTIMATE2015'] > washington['POPESTIMATE2014']]
-    return grew[['STNAME', 'CTYNAME']]
-
+    new_df = census_df[(census_df['SUMLEV'] == 50) & (census_df['REGION'].isin([1, 2])) & 
+                       (census_df['POPESTIMATE2015'] > census_df['POPESTIMATE2014']) & 
+                       (census_df['CTYNAME'].str.startswith('Washington'))
+                      ]
+    return new_df[['STNAME', 'CTYNAME']].sort_index().head(5)
 answer_eight()
 
 
