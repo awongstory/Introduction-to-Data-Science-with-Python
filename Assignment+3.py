@@ -58,8 +58,7 @@
 # *This function should return a DataFrame with 20 columns and 15 entries.*
 
 # In[1]:
-
-def answer_one():
+def load_df_to_memory():
     import pandas as pd
     import numpy as np
     energy = pd.read_excel('Energy Indicators.xls', skiprows=17, skip_footer= 38)
@@ -80,7 +79,10 @@ def answer_one():
     df = pd.merge(ScimEn, energy, how='inner',left_on='Country', right_on='Country')
     alldf = pd.merge(df,GDP, how='inner', left_on='Country', right_on='Country')
     alldf = alldf.set_index('Country')
-    return alldf[:15]
+    return alldf
+
+def answer_one():
+    return load_df_to_memory()[:15]
 
 answer_one()
 
@@ -100,29 +102,55 @@ get_ipython().run_cell_magic('HTML', '', '<svg width="800" height="300">\n  <cir
 # In[3]:
 
 def answer_two():
-    import pandas as pd
-    import numpy as np
-    energy = pd.read_excel('Energy Indicators.xls', skiprows=17, skip_footer= 38)
-    energy = energy[['Unnamed: 1', 'Petajoules', 'Gigajoules', '%']]
+    energy = pd.read_excel("Energy Indicators.xls",skip_footer=38,skip_header=1,skiprows=17) # Skip header and footer
+    energy.drop(energy.columns[[0,1]],axis=1,inplace=True) # Drop first 2 columns
     energy.columns = ['Country', 'Energy Supply', 'Energy Supply per Capita', '% Renewable']
-    energy['Energy Supply'] = energy['Energy Supply'] * 1000000
-    energy[['Energy Supply', 'Energy Supply per Capita', '% Renewable']]= energy[['Energy Supply', 'Energy Supply per Capita', '% Renewable']].replace('...', np.NaN)
-    energy['Country'] = energy['Country'].replace({'Republic of Korea' : 'South Korea', 'United States of America': 'United States', 'United Kingdom of Great Britain and Northern Ireland' : 'United Kingdom', 'China, Hong Kong Special Administrative Region' : 'Hong Kong', 'Iran (Islamic Republic of)':'Iran'})
-    energy['Country'].str.replace(r" \(.*\)","")
-    
-    GDP = pd.read_csv('world_bank.csv', skiprows = 4)
-    GDP['Country Name'] = GDP['Country Name'].replace({'Korea, Rep.': 'South Korea', 'Iran, Islamic Rep.': 'Iran', 'Hong Kong SAR, China' : 'Hong Kong'})    
-    GDP = GDP[['Country Name', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']]
-    GDP.columns = ['Country', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']
-    
+    energy.dropna() # Drop rows with NaN values.
+
+    energy['Country'] = energy['Country'].str.replace(r'\(.*\)', '') # Remove contents within parenthesis.
+    energy['Country'] = energy['Country'].str.replace('\d+', '') # Remove digits from names
+    energy['Country'] = energy['Country'].str.strip() # This brings the Iran energy values back!
+
+    # Turn blank values into NaN
+    for col in energy:
+        energy[col] = energy[col].replace('...',np.nan)
+
+    energy['Country'] = energy['Country'].str.replace('Republic of Korea','South Korea')
+    energy['Country'] = energy['Country'].str.replace('United States of America','United States')
+    energy['Country'] = energy['Country'].str.replace('United Kingdom of Great Britain and Northern Ireland','United Kingdom')
+    energy['Country'] = energy['Country'].str.replace('China, Hong Kong Special Administrative Region','Hong Kong')
+
+    # GDP:
+    GDP = pd.read_csv('world_bank.csv', skiprows=3) # Skip header
+
+    # Make first row the column names
+    new_header = GDP.iloc[0]
+    GDP = GDP[1:]
+    GDP.columns = new_header
+
+    #GDP = GDP.rename(index=str,columns = {"Country Name":"Country"})
+    GDP['Country Name'] = GDP['Country Name'].str.replace('Korea, Rep.','South Korea')
+    GDP['Country Name'] = GDP['Country Name'].str.replace('Iran, Islamic Rep.','Iran')
+    GDP['Country Name'] = GDP['Country Name'].str.replace('Hong Kong SAR, China','Hong Kong')
+
+    # Change column name from 'Country Name' to 'Country' for merging 3 files on country name.
+    names = GDP.columns.tolist()
+    names[names.index('Country Name')] = 'Country'
+    GDP.columns = names
+
+    # Only keep the columns from 2006-15. Drop column number 1 to 50. Don't need country code, etc.
+    GDP = GDP.drop(GDP.iloc[:,1:50], axis=1)
+    GDP.columns = GDP.columns.astype(str).str.split('.').str[0] # Remove '.0' at the end of the year columns.    
+
+    # SCIMEN:
     ScimEn = pd.read_excel('scimagojr-3.xlsx')
     
-    df = pd.merge(ScimEn, energy, how='inner',left_on='Country', right_on='Country')
-    alldf = pd.merge(df,GDP, how='inner', left_on='Country', right_on='Country')
-    alldf = alldf.set_index('Country')
-    answer_one = alldf[:15]
-    answer_two = alldf.shape[0] - answer_one.shape[0]
-    return answer_two
+    # LOST ENTRIES = LEN(OUTER JOIN) - LEN(INNER JOIN)
+    
+    # Need unique entries in all 3 sets so use concat. Can't do that with a left or right outer join!
+    num_outer = len(pd.concat([ScimEn['Country'],energy['Country'],GDP['Country']]).unique())
+    num_inter = (GDP.merge(energy, left_on='Country', right_on='Country', how='inner').merge(ScimEn, left_on='Country', right_on='Country', how='inner').shape[0])
+    return num_outer-num_inter
 
 answer_two()
 
@@ -140,8 +168,7 @@ answer_two()
 
 def answer_three():
     Top15 = answer_one()
-    aveGDP = Top15[['2006','2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']].mean(axis=1).rename('aveGDP').sort_values(ascending=False)
-    return aveGDP
+    return Top15.iloc[:, 10:].mean(axis=1).rename('avgGDP').sort_values(ascending=False)
 
 answer_three()
 
@@ -204,9 +231,8 @@ answer_six()
 
 def answer_seven():
     Top15 = answer_one()
-    Top15['Citation ratio'] = Top15['Self-citations'] / Top15['Citations']
-    MaxCitationRatio = Top15['Citation ratio'].idxmax(), Top15['Citation ratio'].max()
-    return MaxCitationRatio
+    Top15['selfcitation_to_total'] = Top15['Self-citations']/Top15['Citations']
+    return  Top15['selfcitation_to_total'].idxmax(), Top15['selfcitation_to_total'].max()
 
 answer_seven()
 
@@ -222,10 +248,8 @@ answer_seven()
 
 def answer_eight():
     Top15 = answer_one()
-    Top15['PopEstimate'] = Top15['Energy Supply'] / Top15['Energy Supply per Capita']
-    answer_eight = Top15['PopEstimate'].sort_values(ascending=False)
-    answer_eight = answer_eight.index.tolist()[2]
-    return answer_eight
+    Top15['estd_population'] = Top15['Energy Supply'] / Top15['Energy Supply per Capita']
+    return Top15.sort_values(by=['estd_population'], ascending=False).index[2]
 
 answer_eight()
 
