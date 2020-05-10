@@ -168,8 +168,7 @@ answer_two()
 
 def answer_three():
     Top15 = answer_one()
-    aveGDP = Top15[['2006','2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015']].mean(axis=1).rename('aveGDP').sort_values(ascending=False)
-    return aveGDP
+    return Top15.iloc[:, 10:].mean(axis=1).rename('avgGDP').sort_values(ascending=False)
 
 answer_three()
 
