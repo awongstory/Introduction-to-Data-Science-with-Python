@@ -231,9 +231,8 @@ answer_six()
 
 def answer_seven():
     Top15 = answer_one()
-    Top15['Citation ratio'] = Top15['Self-citations'] / Top15['Citations']
-    MaxCitationRatio = Top15['Citation ratio'].idxmax(), Top15['Citation ratio'].max()
-    return MaxCitationRatio
+    Top15['selfcitation_to_total'] = Top15['Self-citations']/Top15['Citations']
+    return  Top15['selfcitation_to_total'].idxmax(), Top15['selfcitation_to_total'].max()
 
 answer_seven()
 
@@ -249,10 +248,8 @@ answer_seven()
 
 def answer_eight():
     Top15 = answer_one()
-    Top15['PopEstimate'] = Top15['Energy Supply'] / Top15['Energy Supply per Capita']
-    answer_eight = Top15['PopEstimate'].sort_values(ascending=False)
-    answer_eight = answer_eight.index.tolist()[2]
-    return answer_eight
+    Top15['estd_population'] = Top15['Energy Supply'] / Top15['Energy Supply per Capita']
+    return Top15.sort_values(by=['estd_population'], ascending=False).index[2]
 
 answer_eight()
 
