@@ -249,6 +249,18 @@ def answer_nine():
 
 answer_nine()
 
+//'float' object has no attribute 'shape' this error is coming while running it
+//so you could use this instead
+//
+def answer_nine():
+    Top15 = answer_one()
+    Top15['Population Estimate'] = Top15['Energy Supply']/Top15['Energy Supply per Capita']
+    Top15['Citable Documents per Capita'] = Top15['Citable documents']/Top15['Population Estimate']
+    Top15['Citable Documents per Capita'] = Top15['Citable Documents per Capita'].astype(float)
+    Top15['Energy Supply per Capita'] = Top15['Energy Supply per Capita'].astype(float)
+    return Top15['Citable Documents per Capita'].corr(Top15['Energy Supply per Capita'])
+answer_nine()
+
 
 # In[49]:
 
