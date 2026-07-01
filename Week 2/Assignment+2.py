@@ -1,6 +1,4 @@
-
 # coding: utf-8
-
 # ---
 # 
 # _You are currently looking at **version 1.2** of this notebook. To download notebooks and datafiles, as well as get help on Jupyter notebooks in the Coursera platform, visit the [Jupyter Notebook FAQ](https://www.coursera.org/learn/python-data-analysis/resources/0dhYG) course resource._
@@ -129,7 +127,7 @@ answer_four()
 
 # In[67]:
 
-census_df = pd.read_csv('census.csv')
+census_df = pd.read_csv('../census.csv')
 census_df.head()
 
 
@@ -192,6 +190,3 @@ def answer_eight():
     return grew[['STNAME', 'CTYNAME']]
 
 answer_eight()
-
-
-

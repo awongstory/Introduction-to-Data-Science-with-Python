@@ -57,6 +57,8 @@
 # *This function should return a DataFrame with 20 columns and 15 entries.*
 
 # In[1]:
+import pandas as pd
+import numpy as np
 
 def answer_one():
     import pandas as pd
